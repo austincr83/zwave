@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Zwave Studio</title>
+  <meta name="description" content="Make custom iPhone wallpapers and home screen widgets.">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Zwave">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <h1 id="title">Backgrounds</h1>
+      <div class="actions">
+        <button class="icon-btn" id="btn-random" aria-label="Randomize" title="Randomize">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.4" class="dot"/><circle cx="16" cy="8" r="1.4" class="dot"/><circle cx="12" cy="12" r="1.4" class="dot"/><circle cx="8" cy="16" r="1.4" class="dot"/><circle cx="16" cy="16" r="1.4" class="dot"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-save" aria-label="Save to library" title="Save to library">
+          <svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
+        </button>
+        <button class="pill-btn" id="btn-export">Export</button>
+      </div>
+    </header>
+
+    <main class="views">
+      <!-- ============ BACKGROUNDS ============ -->
+      <section class="view active" id="view-bg">
+        <div class="stage">
+          <canvas id="bg-canvas" class="phone-canvas"></canvas>
+        </div>
+        <div class="panel">
+          <div class="group">
+            <div class="label">Style</div>
+            <div class="chips" data-k="bg.style">
+              <button data-v="mesh">Mesh</button>
+              <button data-v="gradient">Gradient</button>
+              <button data-v="waves">Waves</button>
+              <button data-v="bokeh">Bokeh</button>
+              <button data-v="bauhaus">Bauhaus</button>
+              <button data-v="rings">Rings</button>
+              <button data-v="dunes">Dunes</button>
+              <button data-v="photo">Photo</button>
+            </div>
+          </div>
+
+          <div class="group">
+            <div class="label">Palette</div>
+            <div class="palettes" data-palette="bg"></div>
+            <div class="colors">
+              <input type="color" data-k="bg.c0" aria-label="Color 1">
+              <input type="color" data-k="bg.c1" aria-label="Color 2">
+              <input type="color" data-k="bg.c2" aria-label="Color 3">
+              <input type="color" data-k="bg.c3" aria-label="Color 4">
+              <button class="ghost-btn" id="btn-shuffle-colors">Shuffle</button>
+            </div>
+          </div>
+
+          <div class="group" data-when="bg.style:photo">
+            <div class="label">Photo</div>
+            <label class="file-btn">Choose photo…<input type="file" accept="image/*" data-photo="bg"></label>
+            <label class="row">Blur<input type="range" min="0" max="100" data-k="bg.photoBlur"></label>
+            <label class="row">Color tint<input type="range" min="0" max="100" data-k="bg.tint"></label>
+          </div>
+
+          <div class="group">
+            <div class="label">Shape</div>
+            <label class="row" data-when="bg.style:gradient">Angle<input type="range" min="0" max="360" data-k="bg.angle"></label>
+            <label class="row" data-when="bg.style:!photo,gradient">Detail<input type="range" min="1" max="10" data-k="bg.detail"></label>
+            <label class="row" data-when="bg.style:mesh,bokeh,dunes">Softness<input type="range" min="0" max="100" data-k="bg.soft"></label>
+            <button class="ghost-btn wide" id="btn-reseed" data-when="bg.style:!gradient,photo">New layout</button>
+          </div>
+
+          <div class="group">
+            <div class="label">Finish</div>
+            <label class="row">Grain<input type="range" min="0" max="100" data-k="bg.grain"></label>
+            <label class="row">Darken<input type="range" min="0" max="80" data-k="bg.dim"></label>
+            <label class="row">Vignette<input type="range" min="0" max="100" data-k="bg.vignette"></label>
+          </div>
+
+          <div class="group">
+            <div class="label">Text</div>
+            <input type="text" class="text-in" placeholder="Add a word, name or quote" data-k="bg.text" maxlength="80">
+            <div data-when="bg.text:?">
+              <div class="chips small" data-k="bg.textPos">
+                <button data-v="top">Below clock</button>
+                <button data-v="center">Center</button>
+                <button data-v="bottom">Bottom</button>
+              </div>
+              <div class="chips small" data-k="bg.font">
+                <button data-v="system">Sans</button>
+                <button data-v="rounded">Rounded</button>
+                <button data-v="serif">Serif</button>
+                <button data-v="mono">Mono</button>
+              </div>
+              <label class="row">Size<input type="range" min="10" max="100" data-k="bg.textSize"></label>
+              <label class="row">Color<input type="color" data-k="bg.textColor"></label>
+            </div>
+          </div>
+
+          <div class="group">
+            <div class="label">Device</div>
+            <select data-k="bg.device" id="device-select"></select>
+            <p class="hint" id="device-hint"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ WIDGETS ============ -->
+      <section class="view" id="view-w">
+        <div class="stage widget-stage" id="widget-stage">
+          <canvas id="w-canvas" class="widget-canvas"></canvas>
+        </div>
+        <div class="panel">
+          <div class="group">
+            <div class="label">Widget</div>
+            <div class="chips" data-k="w.type">
+              <button data-v="quote">Quote</button>
+              <button data-v="date">Date</button>
+              <button data-v="calendar">Calendar</button>
+              <button data-v="countdown">Countdown</button>
+              <button data-v="text">Label</button>
+              <button data-v="photo">Photo</button>
+            </div>
+          </div>
+
+          <div class="group">
+            <div class="label">Size</div>
+            <div class="segmented" data-k="w.size">
+              <button data-v="small">Small</button>
+              <button data-v="medium">Medium</button>
+              <button data-v="large">Large</button>
+            </div>
+          </div>
+
+          <div class="group">
+            <div class="label">Content</div>
+            <div data-when="w.type:quote">
+              <textarea class="text-in" rows="3" placeholder="Quote" data-k="w.quote"></textarea>
+              <input type="text" class="text-in" placeholder="Author (optional)" data-k="w.author">
+            </div>
+            <div data-when="w.type:countdown">
+              <input type="text" class="text-in" placeholder="Event name" data-k="w.event">
+              <label class="row">Date<input type="date" data-k="w.eventDate"></label>
+            </div>
+            <div data-when="w.type:text">
+              <input type="text" class="text-in" placeholder="Big text or emoji" data-k="w.big" maxlength="24">
+              <input type="text" class="text-in" placeholder="Subtitle (optional)" data-k="w.sub" maxlength="60">
+            </div>
+            <div data-when="w.type:date">
+              <input type="text" class="text-in" placeholder="Note (optional)" data-k="w.note" maxlength="60">
+            </div>
+            <div data-when="w.type:calendar">
+              <label class="row toggle">Start week on Monday<input type="checkbox" data-k="w.monday"></label>
+            </div>
+            <div data-when="w.type:photo">
+              <label class="file-btn">Choose photo…<input type="file" accept="image/*" data-photo="w"></label>
+              <input type="text" class="text-in" placeholder="Caption (optional)" data-k="w.caption" maxlength="40">
+            </div>
+          </div>
+
+          <div class="group" data-when="w.type:!photo">
+            <div class="label">Background</div>
+            <div class="chips" data-k="w.bgMode">
+              <button data-v="gradient">Gradient</button>
+              <button data-v="solid">Solid</button>
+              <button data-v="wallpaper">Wallpaper</button>
+              <button data-v="glass">Frosted</button>
+              <button data-v="smoke">Smoke</button>
+            </div>
+            <p class="hint" data-when="w.bgMode:wallpaper,glass,smoke">Uses the slice of your current background that sits behind a top-left widget, so it blends in.</p>
+          </div>
+
+          <div class="group">
+            <div class="label">Colors</div>
+            <div class="palettes" data-palette="w"></div>
+            <div class="colors labeled">
+              <label data-when="w.bgMode:gradient,solid">Fill<input type="color" data-k="w.c0"></label>
+              <label data-when="w.bgMode:gradient">Fill 2<input type="color" data-k="w.c1"></label>
+              <label>Text<input type="color" data-k="w.fg"></label>
+              <label>Accent<input type="color" data-k="w.accent"></label>
+              <button class="ghost-btn" id="btn-match">Match background</button>
+            </div>
+          </div>
+
+          <div class="group">
+            <div class="label">Type</div>
+            <div class="chips small" data-k="w.font">
+              <button data-v="system">Sans</button>
+              <button data-v="rounded">Rounded</button>
+              <button data-v="serif">Serif</button>
+              <button data-v="mono">Mono</button>
+            </div>
+            <div class="chips small" data-k="w.align" data-when="w.type:quote,date,text,countdown">
+              <button data-v="left">Left</button>
+              <button data-v="center">Center</button>
+            </div>
+          </div>
+
+          <div class="group" data-when="w.type:quote,date,countdown,text">
+            <div class="label">Live widget</div>
+            <p class="hint">Images are static. For a widget that updates itself every day, copy this script into the free <b>Scriptable</b> app and add a Scriptable widget.</p>
+            <button class="ghost-btn wide" id="btn-script">Copy Scriptable script</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PREVIEW ============ -->
+      <section class="view" id="view-p">
+        <div class="stage tall">
+          <canvas id="p-canvas" class="phone-canvas"></canvas>
+        </div>
+        <div class="panel">
+          <div class="group">
+            <div class="segmented" data-k="ui.screen">
+              <button data-v="home">Home Screen</button>
+              <button data-v="lock">Lock Screen</button>
+            </div>
+            <p class="hint">A mock-up of your background with the current widget placed at the top. Use it to check that text doesn't collide with the clock or icons.</p>
+          </div>
+          <div class="group">
+            <div class="label">How to use your creations</div>
+            <ol class="steps">
+              <li><b>Wallpaper:</b> Export, save the image to Photos, then in Photos tap <i>Share → Use as Wallpaper</i>.</li>
+              <li><b>Widget image:</b> Export and save to Photos. Put it in its own album, then long-press the home screen → <i>Edit → Add Widget → Photos</i>, and choose that album.</li>
+              <li><b>Live widget:</b> Copy the Scriptable script, paste it into a new script in the Scriptable app, then add a Scriptable widget and pick the script.</li>
+              <li><b>Install this app:</b> In Safari tap <i>Share → Add to Home Screen</i> so it opens full screen and works offline.</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ LIBRARY ============ -->
+      <section class="view" id="view-lib">
+        <div class="panel lib-panel">
+          <div class="lib-grid" id="lib-grid"></div>
+          <p class="empty" id="lib-empty">Nothing saved yet. Tap the bookmark at the top of the Backgrounds or Widgets tab to keep a design here.</p>
+        </div>
+      </section>
+    </main>
+
+    <nav class="tabbar">
+      <button class="tab active" data-tab="bg">
+        <svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M6 15l4-4 3 3 2-2 3 3"/></svg>
+        <span>Backgrounds</span>
+      </button>
+      <button class="tab" data-tab="w">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="18" height="8" rx="2"/></svg>
+        <span>Widgets</span>
+      </button>
+      <button class="tab" data-tab="p">
+        <svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10 18.5h4"/></svg>
+        <span>Preview</span>
+      </button>
+      <button class="tab" data-tab="lib">
+        <svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
+        <span>Saved</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Export sheet -->
+  <div class="sheet-backdrop" id="sheet" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <div class="sheet-head">
+        <h2 id="sheet-title">Save image</h2>
+        <button class="ghost-btn" id="sheet-close">Done</button>
+      </div>
+      <p class="hint" id="sheet-hint">Touch and hold the image, then tap <b>Save to Photos</b>.</p>
+      <img id="sheet-img" alt="Exported image">
+      <div class="sheet-actions">
+        <button class="pill-btn" id="sheet-share">Share…</button>
+        <a class="ghost-btn" id="sheet-download" download>Download</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
