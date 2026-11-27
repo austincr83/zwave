@@ -508,7 +508,7 @@ function renderBackground(ctx, W, H, b, opts = {}) {
     ctx.globalCompositeOperation = 'overlay';
     ctx.globalAlpha = grain * 0.55;
     const pat = ctx.createPattern(getNoise(), 'repeat');
-    const k = Math.max(1, W / 1179 * 1.4);
+    const k = Math.max(0.25, W / 1179 * 1.4);
     ctx.scale(k, k);
     ctx.fillStyle = pat; ctx.fillRect(0, 0, W / k, H / k);
     ctx.restore();
@@ -1059,11 +1059,6 @@ function fullRender() {
     renderWidget(ctx2d(c), c.width, c.height, state.w);
     return { canvas: c, name: `widget-${state.w.type}-${state.w.size}.png` };
   }
-  if (tab === 'p') {
-    const c = mkCanvas(PHONE_PT[0] * 3, PHONE_PT[1] * 3);
-    renderMockup(ctx2d(c), c.width, c.height);
-    return { canvas: c, name: 'preview.png' };
-  }
   const dev = deviceSize(state.bg.device);
   const c = mkCanvas(dev.w, dev.h);
   renderBackground(ctx2d(c), c.width, c.height, state.bg);
@@ -1085,7 +1080,7 @@ async function doExport() {
     $('#sheet-img').src = url;
     $('#sheet-download').href = url;
     $('#sheet-download').download = name;
-    $('#sheet-title').textContent = state.ui.tab === 'w' ? 'Widget image' : state.ui.tab === 'p' ? 'Preview' : 'Wallpaper';
+    $('#sheet-title').textContent = state.ui.tab === 'w' ? 'Widget image' : 'Wallpaper';
     $('#sheet-share').hidden = !canShareFiles(blob, name);
     $('#sheet').hidden = false;
   } catch (e) {
@@ -1294,7 +1289,11 @@ function bindControls() {
         const data = await loadPhoto(f);
         const tgt = input.dataset.photo;
         state[tgt].photo = data;
-        if (tgt === 'bg') { state.bg.style = 'photo'; bgVersion++; }
+        if (tgt === 'bg') {
+          // A photo should come out as-is: no grain, vignette, darkening or tint until asked for.
+          Object.assign(state.bg, { style: 'photo', grain: 0, vignette: 0, dim: 0, tint: 0 });
+          bgVersion++;
+        }
         syncUI(); persist();
       } catch { toast('Could not read that photo.'); }
       input.value = '';
